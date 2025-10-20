@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connections Game</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔗 Connections</h1>
+            <p>Объедините 4 слова в одну категорию. Найдите все 4 группы!</p>
+        </header>
+
+        <div class="game-info">
+            <div id="mistakes">Ошибки: <span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span></div>
+            <button id="newGameBtn">Новая игра</button>
+        </div>
+
+        <div class="found-categories" id="foundCategories">
+            <!-- Найденные категории будут появляться здесь -->
+        </div>
+
+        <div class="words-grid" id="wordsGrid">
+            {% for word in words %}
+            <div class="word-card" data-word="{{ word }}">{{ word }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="controls">
+            <button id="submitBtn" disabled>Проверить выбор (4 слова)</button>
+            <button id="deselectBtn">Отменить выбор</button>
+        </div>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

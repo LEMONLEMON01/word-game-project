@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connections Game</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=<?= time() ?>">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🔗 Connections</h1>
-            <p>Объедините 4 слова в одну категорию. Найдите все 4 группы!</p>
+            <h1>Араарыы Оонньуу</h1>
+            <p>Создай четыре группы из четырех</p>
         </header>
 
-        <div class="game-info">
-            <div id="mistakes">Ошибки: <span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span></div>
-            <button id="newGameBtn">Новая игра</button>
-        </div>
 
         <div class="found-categories" id="foundCategories">
         </div>
@@ -27,9 +23,14 @@
             {% endfor %}
         </div>
 
+        <div class="game-info">
+            <div id="mistakes">Ошибки: <span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span></div>
+        </div>
         <div class="controls">
-            <button id="submitBtn" disabled>Проверить выбор (4 слова)</button>
-            <button id="deselectBtn">Отменить выбор</button>
+           <button id="submitBtn" disabled>Отправить</button>
+            <button id="deselectBtn">Снять отметку</button>
+            <button id="newGameBtn">Новая игра</button>
+            
         </div>
 
         <div id="message" class="message"></div>

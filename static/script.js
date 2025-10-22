@@ -89,7 +89,7 @@ class ConnectionsGame {
 
         if (result.game_complete) {
             setTimeout(() => {
-                this.showMessage('🎉 Поздравляем! Вы нашли все категории!', 'success');
+                this.showMessage(' Поздравляем! Вы нашли все категории!', 'success');
             }, 1000);
         }
 

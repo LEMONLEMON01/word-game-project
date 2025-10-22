@@ -5,25 +5,24 @@ from fastapi.responses import JSONResponse
 from typing import List
 import json
 
+#надо через командную строку зайти в папку проекта, скачать requirements
+#ввести python -m uvicorn main:app --reload и запустить http://localhost:8000/
+
 from game_logic import game_instance, Category
 
 app = FastAPI(title="Connections Game")
 
-# Настройка шаблонов и статических файлов
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Глобальная переменная для хранения текущей игры (в продакшене используйте базу данных)
 current_games = {}
 
 
 @app.get("/")
 async def home(request: Request):
-    """Главная страница с игрой"""
-    game_id = "default"  # В реальном приложении генерируйте уникальный ID
+    game_id = "default"  # должен быть уникальный ID
     words, categories = game_instance.generate_game()
 
-    # Сохраняем категории для проверки
     current_games[game_id] = {
         "categories": categories,
         "found_categories": []
@@ -38,7 +37,6 @@ async def home(request: Request):
 
 @app.post("/check_selection")
 async def check_selection(game_id: str = Form(...), selected_words: str = Form(...)):
-    """Проверяет выбранные слова"""
     try:
         words_list = json.loads(selected_words)
 
@@ -51,14 +49,12 @@ async def check_selection(game_id: str = Form(...), selected_words: str = Form(.
         )
 
         if result["valid"]:
-            # Добавляем найденную категорию
             current_games[game_id]["found_categories"].append({
                 "name": result["category_name"],
                 "description": result["description"],
                 "words": words_list
             })
 
-            # Проверяем, завершена ли игра
             remaining = len(current_games[game_id]["categories"]) - len(current_games[game_id]["found_categories"])
             result["remaining"] = remaining
             result["game_complete"] = remaining == 0
@@ -71,7 +67,6 @@ async def check_selection(game_id: str = Form(...), selected_words: str = Form(.
 
 @app.get("/game_status/{game_id}")
 async def get_game_status(game_id: str):
-    """Возвращает статус игры"""
     if game_id in current_games:
         return {
             "found_categories": current_games[game_id]["found_categories"],
@@ -83,8 +78,7 @@ async def get_game_status(game_id: str):
 
 @app.post("/new_game")
 async def new_game():
-    """Создает новую игру"""
-    game_id = "default"  # В реальном приложении генерируйте уникальный ID
+    game_id = "default"  # должен быть уникальный ID
     words, categories = game_instance.generate_game()
 
     current_games[game_id] = {

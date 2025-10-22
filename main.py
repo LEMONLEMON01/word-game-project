@@ -51,7 +51,6 @@ async def check_selection(game_id: str = Form(...), selected_words: str = Form(.
         if result["valid"]:
             current_games[game_id]["found_categories"].append({
                 "name": result["category_name"],
-                "description": result["description"],
                 "words": words_list
             })
 

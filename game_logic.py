@@ -1,85 +1,64 @@
 from typing import List, Dict, Tuple
-import random
 from dataclasses import dataclass
+import random
+import database
 
 
 @dataclass
 class Category:
     name: str
     words: List[str]
-    description: str
 
 
 class ConnectionsGame:
     def __init__(self):
-        self.categories_pool = [
-            Category(
-                name="Фрукты",
-                words=["яблоко", "банан", "апельсин", "виноград"],
-                description="Сочные съедобные плоды"
-            ),
-            Category(
-                name="Животные",
-                words=["собака", "кошка", "лошадь", "корова"],
-                description="Домашние питомцы"
-            ),
-            Category(
-                name="Цвета",
-                words=["красный", "синий", "зеленый", "желтый"],
-                description="Основные цвета"
-            ),
-            Category(
-                name="Города",
-                words=["Москва", "Париж", "Лондон", "Токио"],
-                description="Столицы мира"
-            ),
-            Category(
-                name="Профессии",
-                words=["врач", "учитель", "инженер", "повар"],
-                description="Виды занятости"
-            ),
-            Category(
-                name="Спорт",
-                words=["футбол", "баскетбол", "теннис", "бокс"],
-                description="Виды спорта"
-            ),
-            Category(
-                name="Технологии",
-                words=["компьютер", "смартфон", "планшет", "ноутбук"],
-                description="Электронные устройства"
-            ),
-            Category(
-                name="Напитки",
-                words=["кофе", "чай", "сок", "вода"],
-                description="Жидкости для питья"
-            )
-        ]
+        pass
+
+    def get_categories_from_db(self) -> List[Category]:
+        try:
+            db_categories = database.get_categories()
+            categories = []
+
+            for cat in db_categories:
+                words = database.get_words_by_category(cat["category_id"])
+                if len(words) >= 4:
+                    categories.append(
+                        Category(name=cat["category_name"], words=words[:4])
+                    )
+
+            return categories
+
+        except Exception as e:
+            print(f"Ошибка при загрузке категорий: {e}")
+            return []
 
     def generate_game(self) -> Tuple[List[str], List[Category]]:
-        selected_categories = random.sample(self.categories_pool, 4)
+        categories = self.get_categories_from_db()
+        if len(categories) < 4:
+            return self._generate_fallback_game()
 
-        all_words = []
-        for category in selected_categories:
-            all_words.extend(category.words)
-
+        selected = random.sample(categories, 4)
+        all_words = [word for c in selected for word in c.words]
         random.shuffle(all_words)
+        return all_words, selected
 
-        return all_words, selected_categories
+    def _generate_fallback_game(self):
+        fallback = [
+            Category("Фрукты", ["Яблоко", "Банан", "Апельсин", "Виноград"]),
+            Category("Животные", ["Кошка", "Собака", "Лошадь", "Корова"]),
+            Category("Цвета", ["Красный", "Синий", "Зеленый", "Желтый"]),
+            Category("Города", ["Москва", "Париж", "Лондон", "Токио"]),
+        ]
+        all_words = [word for c in fallback for word in c.words]
+        random.shuffle(all_words)
+        return all_words, fallback
 
     def check_selection(self, selected_words: List[str], categories: List[Category]) -> Dict:
         for category in categories:
             if set(selected_words) == set(category.words):
-                return {
-                    "valid": True,
-                    "category_name": category.name,
-                    "description": category.description
-                }
+                return {"valid": True, "category_name": category.name}
 
         return {"valid": False, "message": "Эти слова не образуют категорию"}
-
-    def calculate_difficulty(self, category: Category) -> str:
-        difficulties = ["🟨 Легко", "🟩 Средне", "🟦 Сложно", "🟪 Очень сложно"]
-        return random.choice(difficulties)
 
 
 game_instance = ConnectionsGame()

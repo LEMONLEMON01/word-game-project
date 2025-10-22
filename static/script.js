@@ -10,12 +10,10 @@ class ConnectionsGame {
     }
 
     initializeEventListeners() {
-        // Выбор слов
         document.querySelectorAll('.word-card').forEach(card => {
             card.addEventListener('click', () => this.toggleWord(card));
         });
 
-        // Кнопки управления
         document.getElementById('submitBtn').addEventListener('click', () => this.submitSelection());
         document.getElementById('deselectBtn').addEventListener('click', () => this.deselectAll());
         document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
@@ -27,11 +25,9 @@ class ConnectionsGame {
         const word = card.dataset.word;
 
         if (this.selectedWords.includes(word)) {
-            // Убираем из выбора
             this.selectedWords = this.selectedWords.filter(w => w !== word);
             card.classList.remove('selected');
         } else {
-            // Добавляем в выбор
             if (this.selectedWords.length < 4) {
                 this.selectedWords.push(word);
                 card.classList.add('selected');
@@ -81,7 +77,6 @@ class ConnectionsGame {
     handleSuccess(result) {
         this.showMessage(`Правильно! "${result.category_name}" - ${result.description}`, 'success');
 
-        // Помечаем слова как использованные
         this.selectedWords.forEach(word => {
             const card = document.querySelector(`.word-card[data-word="${word}"]`);
             if (card) {
@@ -90,10 +85,8 @@ class ConnectionsGame {
             }
         });
 
-        // Добавляем найденную категорию
         this.addFoundCategory(result.category_name, this.selectedWords);
 
-        // Проверяем завершение игры
         if (result.game_complete) {
             setTimeout(() => {
                 this.showMessage(' Поздравляем! Вы нашли все категории!', 'success');
@@ -154,7 +147,6 @@ class ConnectionsGame {
 
             const result = await response.json();
 
-            // Обновляем игровое поле
             this.gameId = result.game_id;
             this.selectedWords = [];
             this.mistakes = 0;
@@ -171,7 +163,6 @@ class ConnectionsGame {
                 wordsGrid.appendChild(card);
             });
 
-            // Сбрасываем интерфейс
             document.getElementById('foundCategories').innerHTML = '';
             document.querySelectorAll('.mistake').forEach(mistake => {
                 mistake.classList.remove('used');
@@ -216,7 +207,6 @@ class ConnectionsGame {
     }
 }
 
-// Инициализация игры при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     new ConnectionsGame();
 });

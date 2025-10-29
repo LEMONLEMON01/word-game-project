@@ -3,39 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connections Game</title>
+    <title>Араарыы Оонньуу</title>
     <link rel="stylesheet" href="/static/style.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" >
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Араарыы Оонньуу</h1>
-            <p>Создай четыре группы из четырех</p>
+        <header class="game-header py-3 mb-4">
+            <div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="game-title m-0">Араарыы Оонньуу</h3>
+    
+                </div>
+            </div>
         </header>
 
-
-        <div class="found-categories" id="foundCategories">
+        <div class="game-screen">
+            <div class="found-categories" id="foundCategories">
+            </div>
+            <div class="words-grid" id="wordsGrid">
+                {% for word in words %}
+                <div class="word-card" data-word="{{ word }}">{{ word }}</div>
+                {% endfor %}
+            </div>
         </div>
-
-        <div class="words-grid" id="wordsGrid">
-            {% for word in words %}
-            <div class="word-card" data-word="{{ word }}">{{ word }}</div>
-            {% endfor %}
-        </div>
+        
+        
 
         <div class="game-info">
-            <div id="mistakes">Ошибки: <span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span></div>
+            <div id="mistakes">Осталось ошибок: <span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span></div>
         </div>
         <div class="controls">
-           <button id="submitBtn" disabled>Отправить</button>
             <button id="deselectBtn">Снять отметку</button>
-            <button id="newGameBtn">Новая игра</button>
+            <button id="submitBtn" disabled>Отправить</button>
             
         </div>
 
         <div id="message" class="message"></div>
     </div>
 
+    <section class="section" id="gamecontent">
+        <div class="spellbee-container text-center">
+            <div class="spelling-bee-text">
+                <h2 class="text-center">How to Play Connections NYT Game?</h2>
+                <ol class="ol">
+                    <li>
+                        <h3>Read the words</h3><span>The first step is to carefully read and understand the words provided in the Connections New York Times Word Game. Take your time to understand each word and think about what it means in relation to the Connections Puzzle.If you need assistance, feel free to use Google or other resources to help you understand the meaning of the words.</span>
+                        <img src="/images/step1.png" alt="Make the first word" title="Make the first word">
+                    </li>
+                    <li>
+                        <h3>Look for a Common Thing</h3><span>In the Connections game, after reading and understanding the words, your next step is to find the common theme that connects them.During this step, you can ask yourself questions like: Do the words belong to the same group? Are they similar in some way? Do they have a connection to a specific topic or idea? Look for relationships or similarities between the words to find the common theme.</span>
+                        <img src="../images/step2.png" alt="Create a word list" title="Create a word list">
+                    </li>
+                    <li>
+                        <h3>Select & Submit Your Answer</h3><span>Once you have identified the common theme and found the four words that fit within that theme, it's time to make your selection.After selecting the four words, you need to submit your answer. You can do that by clicking on Submit button. </span>
+                        <img src="../images/step3.png" alt="Find out your score" title="Find out your score">
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </section>
+
+
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">@LemonLemon Ltd | Араарыы Оонньуу | Связать слова</p>
+        </div>
+    </footer>
     <script src="/static/script.js"></script>
 </body>
 </html>

@@ -40,7 +40,7 @@ class ConnectionsGame {
     updateSubmitButton() {
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = this.selectedWords.length !== 4;
-        submitBtn.textContent = `Проверить выбор (${this.selectedWords.length}/4)`;
+        submitBtn.textContent = `Отправить (${this.selectedWords.length}/4)`;
     }
 
     async submitSelection() {
@@ -139,41 +139,41 @@ class ConnectionsGame {
         this.updateSubmitButton();
     }
 
-    async newGame() {
-        try {
-            const response = await fetch('/new_game', {
-                method: 'POST'
-            });
+    // async newGame() {
+    //     try {
+    //         const response = await fetch('/new_game', {
+    //             method: 'POST'
+    //         });
 
-            const result = await response.json();
+    //         const result = await response.json();
 
-            this.gameId = result.game_id;
-            this.selectedWords = [];
-            this.mistakes = 0;
+    //         this.gameId = result.game_id;
+    //         this.selectedWords = [];
+    //         this.mistakes = 0;
 
-            const wordsGrid = document.getElementById('wordsGrid');
-            wordsGrid.innerHTML = '';
+    //         const wordsGrid = document.getElementById('wordsGrid');
+    //         wordsGrid.innerHTML = '';
 
-            result.words.forEach(word => {
-                const card = document.createElement('div');
-                card.className = 'word-card';
-                card.dataset.word = word;
-                card.textContent = word;
-                card.addEventListener('click', () => this.toggleWord(card));
-                wordsGrid.appendChild(card);
-            });
+    //         result.words.forEach(word => {
+    //             const card = document.createElement('div');
+    //             card.className = 'word-card';
+    //             card.dataset.word = word;
+    //             card.textContent = word;
+    //             card.addEventListener('click', () => this.toggleWord(card));
+    //             wordsGrid.appendChild(card);
+    //         });
 
-            document.getElementById('foundCategories').innerHTML = '';
-            document.querySelectorAll('.mistake').forEach(mistake => {
-                mistake.classList.remove('used');
-            });
-            this.updateSubmitButton();
-            this.hideMessage();
+    //         document.getElementById('foundCategories').innerHTML = '';
+    //         document.querySelectorAll('.mistake').forEach(mistake => {
+    //             mistake.classList.remove('used');
+    //         });
+    //         this.updateSubmitButton();
+    //         this.hideMessage();
 
-        } catch (error) {
-            this.showMessage('Ошибка при создании новой игры', 'error');
-        }
-    }
+    //     } catch (error) {
+    //         this.showMessage('Ошибка при создании новой игры', 'error');
+    //     }
+    // }
 
     async updateGameStatus() {
         try {

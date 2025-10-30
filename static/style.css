@@ -117,6 +117,7 @@ body {
 #submitBtn {
     background: white;
     border: 2px solid black;
+    border-radius:10px;
     
 }
 
@@ -127,17 +128,22 @@ body {
 }
 
 #submitBtn:not(:disabled):hover {
-    background:  gray;
+    background:  #d4edda;
     border: 2px solid black;
 }
-
+.shuffleBtn {
+    background: white;
+    border: 2px solid black;
+    border-radius:10px;
+}
 #deselectBtn {
     background: white;
     border: 2px solid black;
+    border-radius:10px;
 }
 
 #deselectBtn:hover {
-    background: gray;
+    background: #d4edda;
 }
 
 .message {

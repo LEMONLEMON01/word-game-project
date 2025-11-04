@@ -5,7 +5,7 @@ class ConnectionsGame {
         this.maxMistakes = 4;
         this.gameId = document.querySelector('input[name="game_id"]')?.value || 'default';
         this.foundCategories = [];
-        this.wordPositions = new Map(); // Track original positions of words
+        this.wordPositions = new Map();
         
         this.initializeEventListeners();
         this.initializeWordPositions();
@@ -85,14 +85,11 @@ class ConnectionsGame {
 
     handleSuccess(result) {
         this.showMessage(`Правильно! "${result.category_name}"`, 'success');
-
-        // Add to found categories
         this.foundCategories.push({
             name: result.category_name,
             words: [...this.selectedWords]
         });
 
-        // Replace words with category block
         this.replaceWordsWithCategory(result.category_name, this.selectedWords);
 
         if (result.game_complete) {
@@ -107,8 +104,6 @@ class ConnectionsGame {
     replaceWordsWithCategory(categoryName, words) {
         const combinedGrid = document.getElementById('combinedGrid');
         const gridItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
-        
-        // Find the positions of the selected words
         const wordPositions = words.map(word => {
             const index = Array.from(gridItems).findIndex(item => 
                 item.classList.contains('word-card') && item.dataset.word === word
@@ -117,12 +112,9 @@ class ConnectionsGame {
         }).filter(index => index !== -1).sort((a, b) => a - b);
 
         if (wordPositions.length !== 4) return;
-
-        // Find the row of the first word to place the category block
         const firstPosition = wordPositions[0];
         const rowStart = Math.floor(firstPosition / 4) * 4;
         
-        // Create category block that spans 4 columns
         const categoryBlock = document.createElement('div');
         categoryBlock.className = `category-block grid-item ${this.getCategoryColor(this.foundCategories.length - 1)}`;
         categoryBlock.innerHTML = `
@@ -132,12 +124,10 @@ class ConnectionsGame {
             </div>
         `;
 
-        // Remove all four words
         wordPositions.sort((a, b) => b - a).forEach(position => {
             gridItems[position].remove();
         });
 
-        // Insert category block at the beginning of the row
         const rowItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
         const insertPosition = rowStart;
         
@@ -146,28 +136,19 @@ class ConnectionsGame {
         } else {
             combinedGrid.appendChild(categoryBlock);
         }
-
-        // Update the grid layout to maintain proper flow
         this.updateGridLayout();
     }
 
     updateGridLayout() {
         const combinedGrid = document.getElementById('combinedGrid');
         const allItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
-        
-        // Separate category blocks and word cards
         const categoryBlocks = allItems.filter(item => item.classList.contains('category-block'));
         const wordCards = allItems.filter(item => item.classList.contains('word-card'));
-        
-        // Clear the grid
         combinedGrid.innerHTML = '';
-        
-        // Add category blocks first (they take full rows)
         categoryBlocks.forEach(block => {
             combinedGrid.appendChild(block);
         });
         
-        // Add remaining word cards
         wordCards.forEach(card => {
             combinedGrid.appendChild(card);
         });
@@ -203,19 +184,15 @@ class ConnectionsGame {
     shuffleWords() {
         const combinedGrid = document.getElementById('combinedGrid');
         const wordCards = Array.from(combinedGrid.querySelectorAll('.word-card:not(.used)'));
-        
-        // Remove word cards from grid temporarily
         wordCards.forEach(card => {
             card.remove();
         });
         
-        // Shuffle the word cards array
         for (let i = wordCards.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [wordCards[i], wordCards[j]] = [wordCards[j], wordCards[i]];
         }
         
-        // Add word cards back to grid after category blocks
         wordCards.forEach(card => {
             combinedGrid.appendChild(card);
             card.classList.add('scramble-animation');

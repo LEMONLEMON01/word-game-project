@@ -99,14 +99,14 @@ body {
     color: #333;
     font-weight: bold;
     text-align: center;
-    grid-column: 1 / span 4; /* Span all 4 columns */
+    grid-column: 1 / span 4; 
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     animation: fadeIn 0.5s ease-in;
-    margin: 5px 0; /* Add some vertical spacing between category blocks */
+    margin: 5px 0; 
 }
 
 .category-content {
@@ -146,7 +146,7 @@ body {
     }
     
     .category-block {
-        grid-column: 1 / span 2; /* Span 2 columns on mobile */
+        grid-column: 1 / span 2; 
     }
 }
 

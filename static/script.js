@@ -4,9 +4,19 @@ class ConnectionsGame {
         this.mistakes = 0;
         this.maxMistakes = 4;
         this.gameId = document.querySelector('input[name="game_id"]')?.value || 'default';
-
+        this.foundCategories = [];
+        this.wordPositions = new Map(); // Track original positions of words
+        
         this.initializeEventListeners();
+        this.initializeWordPositions();
         this.updateGameStatus();
+    }
+
+    initializeWordPositions() {
+        const wordCards = document.querySelectorAll('.word-card');
+        wordCards.forEach((card, index) => {
+            this.wordPositions.set(card.dataset.word, index);
+        });
     }
 
     initializeEventListeners() {
@@ -16,7 +26,7 @@ class ConnectionsGame {
 
         document.getElementById('submitBtn').addEventListener('click', () => this.submitSelection());
         document.getElementById('deselectBtn').addEventListener('click', () => this.deselectAll());
-        document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
+        document.getElementById('shuffleBtn').addEventListener('click', () => this.shuffleWords());
     }
 
     toggleWord(card) {
@@ -40,7 +50,6 @@ class ConnectionsGame {
     updateSubmitButton() {
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = this.selectedWords.length !== 4;
-        submitBtn.textContent = `Отправить (${this.selectedWords.length}/4)`;
     }
 
     async submitSelection() {
@@ -75,25 +84,98 @@ class ConnectionsGame {
     }
 
     handleSuccess(result) {
-        this.showMessage(`Правильно! "${result.category_name}" - ${result.description}`, 'success');
+        this.showMessage(`Правильно! "${result.category_name}"`, 'success');
 
-        this.selectedWords.forEach(word => {
-            const card = document.querySelector(`.word-card[data-word="${word}"]`);
-            if (card) {
-                card.classList.add('used');
-                card.classList.remove('selected');
-            }
+        // Add to found categories
+        this.foundCategories.push({
+            name: result.category_name,
+            words: [...this.selectedWords]
         });
 
-        this.addFoundCategory(result.category_name, this.selectedWords);
+        // Replace words with category block
+        this.replaceWordsWithCategory(result.category_name, this.selectedWords);
 
         if (result.game_complete) {
             setTimeout(() => {
-                this.showMessage(' Поздравляем! Вы нашли все категории!', 'success');
+                this.showMessage('Поздравляем! Вы нашли все категории!', 'success');
             }, 1000);
         }
 
         this.updateGameStatus();
+    }
+
+    replaceWordsWithCategory(categoryName, words) {
+        const combinedGrid = document.getElementById('combinedGrid');
+        const gridItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
+        
+        // Find the positions of the selected words
+        const wordPositions = words.map(word => {
+            const index = Array.from(gridItems).findIndex(item => 
+                item.classList.contains('word-card') && item.dataset.word === word
+            );
+            return index;
+        }).filter(index => index !== -1).sort((a, b) => a - b);
+
+        if (wordPositions.length !== 4) return;
+
+        // Find the row of the first word to place the category block
+        const firstPosition = wordPositions[0];
+        const rowStart = Math.floor(firstPosition / 4) * 4;
+        
+        // Create category block that spans 4 columns
+        const categoryBlock = document.createElement('div');
+        categoryBlock.className = `category-block grid-item ${this.getCategoryColor(this.foundCategories.length - 1)}`;
+        categoryBlock.innerHTML = `
+            <div class="category-content">
+                <strong>${categoryName}</strong>
+                <div class="category-words">${words.join(', ')}</div>
+            </div>
+        `;
+
+        // Remove all four words
+        wordPositions.sort((a, b) => b - a).forEach(position => {
+            gridItems[position].remove();
+        });
+
+        // Insert category block at the beginning of the row
+        const rowItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
+        const insertPosition = rowStart;
+        
+        if (rowItems[insertPosition]) {
+            combinedGrid.insertBefore(categoryBlock, rowItems[insertPosition]);
+        } else {
+            combinedGrid.appendChild(categoryBlock);
+        }
+
+        // Update the grid layout to maintain proper flow
+        this.updateGridLayout();
+    }
+
+    updateGridLayout() {
+        const combinedGrid = document.getElementById('combinedGrid');
+        const allItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
+        
+        // Separate category blocks and word cards
+        const categoryBlocks = allItems.filter(item => item.classList.contains('category-block'));
+        const wordCards = allItems.filter(item => item.classList.contains('word-card'));
+        
+        // Clear the grid
+        combinedGrid.innerHTML = '';
+        
+        // Add category blocks first (they take full rows)
+        categoryBlocks.forEach(block => {
+            combinedGrid.appendChild(block);
+        });
+        
+        // Add remaining word cards
+        wordCards.forEach(card => {
+            combinedGrid.appendChild(card);
+        });
+    }
+
+    getCategoryColor(categoryIndex) {
+        const colors = ['yellow', 'green', 'blue', 'purple'];
+        return colors[categoryIndex % colors.length];
     }
 
     handleMistake(message) {
@@ -118,17 +200,29 @@ class ConnectionsGame {
         });
     }
 
-    addFoundCategory(categoryName, words) {
-        const colors = ['yellow', 'green', 'blue', 'purple'];
-        const foundCategories = document.getElementById('foundCategories');
-
-        const categoryDiv = document.createElement('div');
-        categoryDiv.className = `category-group ${colors[foundCategories.children.length % colors.length]}`;
-        categoryDiv.innerHTML = `
-            <strong>${categoryName}</strong>: ${words.join(', ')}
-        `;
-
-        foundCategories.appendChild(categoryDiv);
+    shuffleWords() {
+        const combinedGrid = document.getElementById('combinedGrid');
+        const wordCards = Array.from(combinedGrid.querySelectorAll('.word-card:not(.used)'));
+        
+        // Remove word cards from grid temporarily
+        wordCards.forEach(card => {
+            card.remove();
+        });
+        
+        // Shuffle the word cards array
+        for (let i = wordCards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [wordCards[i], wordCards[j]] = [wordCards[j], wordCards[i]];
+        }
+        
+        // Add word cards back to grid after category blocks
+        wordCards.forEach(card => {
+            combinedGrid.appendChild(card);
+            card.classList.add('scramble-animation');
+            setTimeout(() => {
+                card.classList.remove('scramble-animation');
+            }, 300);
+        });
     }
 
     deselectAll() {
@@ -138,42 +232,6 @@ class ConnectionsGame {
         });
         this.updateSubmitButton();
     }
-
-    // async newGame() {
-    //     try {
-    //         const response = await fetch('/new_game', {
-    //             method: 'POST'
-    //         });
-
-    //         const result = await response.json();
-
-    //         this.gameId = result.game_id;
-    //         this.selectedWords = [];
-    //         this.mistakes = 0;
-
-    //         const wordsGrid = document.getElementById('wordsGrid');
-    //         wordsGrid.innerHTML = '';
-
-    //         result.words.forEach(word => {
-    //             const card = document.createElement('div');
-    //             card.className = 'word-card';
-    //             card.dataset.word = word;
-    //             card.textContent = word;
-    //             card.addEventListener('click', () => this.toggleWord(card));
-    //             wordsGrid.appendChild(card);
-    //         });
-
-    //         document.getElementById('foundCategories').innerHTML = '';
-    //         document.querySelectorAll('.mistake').forEach(mistake => {
-    //             mistake.classList.remove('used');
-    //         });
-    //         this.updateSubmitButton();
-    //         this.hideMessage();
-
-    //     } catch (error) {
-    //         this.showMessage('Ошибка при создании новой игры', 'error');
-    //     }
-    // }
 
     async updateGameStatus() {
         try {
@@ -193,6 +251,10 @@ class ConnectionsGame {
         messageDiv.textContent = text;
         messageDiv.className = `message ${type}`;
         messageDiv.style.display = 'block';
+        
+        setTimeout(() => {
+            this.hideMessage();
+        }, 3000);
     }
 
     hideMessage() {

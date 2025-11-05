@@ -12,9 +12,9 @@ body {
 }
 
 .container {
-    max-width: 00px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding:0 30px;
+    padding: 0 30px;
 }
 
 .game-header {
@@ -23,9 +23,25 @@ body {
     margin-bottom: 60px;
     padding-left: 15px;
 }
-.game-screen{
-    width:45%;
-    margin:auto;
+
+.game-screen {
+    width: 45%;
+    margin: auto;
+}
+
+.combined-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+    min-height: 400px; 
+}
+
+.grid-item {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .game-info {
@@ -48,30 +64,6 @@ body {
     opacity: 0.3;
 }
 
-.found-categories {
-    margin-bottom: 20px;
-}
-
-.category-group {
-    padding: 15px;
-    margin: 10px 0;
-    border-radius: 8px;
-    color: white;
-    font-weight: bold;
-}
-
-.category-group.yellow { background: #ffcc95; }
-.category-group.green { background: #aef8cb; }
-.category-group.blue { background: #b6ceff; }
-.category-group.purple { background: #E0ceff; }
-
-.words-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
 .word-card {
     padding: 20px 10px;
     text-align: center;
@@ -82,6 +74,8 @@ body {
     font-weight: bold;
     transition: all 0.3s ease;
     user-select: none;
+    width: 100%;
+    height: 100%;
 }
 
 .word-card:hover {
@@ -98,6 +92,64 @@ body {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+.category-block {
+    padding: 15px;
+    border-radius: 8px;
+    color: #333;
+    font-weight: bold;
+    text-align: center;
+    grid-column: 1 / span 4; 
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.5s ease-in;
+    margin: 5px 0; 
+}
+
+.category-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.category-words {
+    font-size: 0.89em;
+    opacity: 0.8;
+    font-weight: normal;
+}
+
+.category-block.yellow { background: #ffcc95; }
+.category-block.green { background: #aef8cb; }
+.category-block.blue { background: #b6ceff; }
+.category-block.purple { background: #E0ceff; }
+
+.word-card {
+    padding: 20px 10px;
+    text-align: center;
+    background: #d3fbe3;
+    border: 2px solid #d3fbe3;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    user-select: none;
+    width: 100%;
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .combined-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .category-block {
+        grid-column: 1 / span 2; 
+    }
+}
+
 
 .controls {
     display: flex;
@@ -117,29 +169,35 @@ body {
 #submitBtn {
     background: white;
     border: 2px solid black;
-    border-radius:10px;
-    
+    border-radius: 10px;
 }
 
 #submitBtn:disabled {
     background: white;
     cursor: not-allowed;
-    border-color:  gray;
+    border-color: gray;
+    color: gray;
 }
 
 #submitBtn:not(:disabled):hover {
-    background:  #d4edda;
+    background: #d4edda;
     border: 2px solid black;
 }
-.shuffleBtn {
+
+#shuffleBtn {
     background: white;
     border: 2px solid black;
-    border-radius:10px;
+    border-radius: 10px;
 }
+
+#shuffleBtn:hover {
+    background: #d4edda;
+}
+
 #deselectBtn {
     background: white;
     border: 2px solid black;
-    border-radius:10px;
+    border-radius: 10px;
 }
 
 #deselectBtn:hover {
@@ -152,6 +210,7 @@ body {
     text-align: center;
     font-weight: bold;
     margin-top: 20px;
+    display: none;
 }
 
 .message.success {
@@ -172,12 +231,70 @@ body {
     border: 1px solid #bee5eb;
 }
 
+.section {
+    margin-top: 50px;
+    padding: 30px 0;
+}
+
+.spellbee-container h3 {
+    margin-bottom: 30px;
+    font-weight: bold;
+}
+
+.spellbee-container ul li {
+    margin-bottom: 40px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+}
+
+.spellbee-container ul li h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.spellbee-container img {
+    margin-top: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+@keyframes scramble {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.scramble-animation {
+    animation: scramble 0.3s ease-in-out;
+}
+
 @media (max-width: 768px) {
-    .words-grid {
+    .combined-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
     .container {
         padding: 15px;
+    }
+    
+    .game-screen {
+        width: 90%;
+    }
+    
+    .controls {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .controls button {
+        width: 80%;
     }
 }

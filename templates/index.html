@@ -5,61 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Араарыы Оонньуу</title>
     <link rel="stylesheet" href="/static/style.css?v=<?= time() ?>">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" >
-    <!-- Vue.js -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
         <header class="game-header py-3 mb-4">
             <div>
                 <div class="d-flex justify-content-between align-items-center">
-                    <h3 class="game-title m-0">Араарыы Оонньуу</h3>
-    
+                    <h3 class="game-title m-0">Болох тыл</h3>
                 </div>
             </div>
         </header>
 
         <div class="game-screen">
-            <div class="found-categories" id="foundCategories">
-            </div>
-            <div class="words-grid" id="wordsGrid">
+            <div class="combined-grid" id="combinedGrid">
                 {% for word in words %}
-                <div class="word-card" data-word="{{ word }}">{{ word }}</div>
+                <div class="word-card grid-item" data-word="{{ word }}">{{ word }}</div>
                 {% endfor %}
             </div>
         </div>
         
-        
-
         <div class="game-info">
-            <div id="mistakes">Осталось ошибок: <span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span><span class="mistake">●</span></div>
+            <div id="mistakes">Осталось ошибок: 
+                <span class="mistake">●</span>
+                <span class="mistake">●</span>
+                <span class="mistake">●</span>
+                <span class="mistake">●</span>
+            </div>
         </div>
+        
         <div class="controls">
             <button id="deselectBtn">Снять отметку</button>
-            <button id="deselectBtn">Перемешать</button><!-- shuffleBtn  добавть в js-->
+            <button id="shuffleBtn">Перемешать</button>
             <button id="submitBtn" disabled>Отправить</button>
-            
         </div>
 
         <div id="message" class="message"></div>
     </div>
 
-    <section class="section" >
+    <section class="section">
         <div class="spellbee-container">
             <div class="text-center">
-                <h3 class="text-center">Как играть в Араарыы Оонньуу?</h3>
+                <h3 class="text-center">Как играть в Болох тыл?</h3>
                 <ul class="list-unstyled">
                     <li>
-                        <h4>Прочти слова</h4><span>Первый шаг — внимательно прочитать и понять слова, представленные в игре "Араарыы Оонньуу". Не спешите, постарайтесь понять каждое слово и подумать, что оно означает в контексте головоломки. Если потребуется помощь, не стесняйтесь использовать Google или другие ресурсы, чтобы понять значение слов.</span><br>
-                        <img class="w-25 h-25"  src="/static/images/step1.png" alt="Прочти слова" title="Прочти слова">
+                        <h4>Прочти слова</h4>
+                        <span>Первый шаг — внимательно прочитать и понять слова, представленные в игре "Араарыы Оонньуу". Не спешите, постарайтесь понять каждое слово и подумать, что оно означает в контексте головоломки. Если потребуется помощь, не стесняйтесь использовать Google или другие ресурсы, чтобы понять значение слов.</span><br>
+                        <img class="w-25 h-25" src="/static/images/step1.png" alt="Прочти слова" title="Прочти слова">
                     </li>
                     <li>
-                        <h4>Найди общее</h4><span>После того как вы прочитаете и поймёте слова, следующий шаг — найти общую тему, которая их связывает. В этот момент задавайте себе вопросы: Принадлежат ли слова к одной группе? Они чем-то похожи? Связаны ли они с определённой темой или идеей? Ищите связи или сходства между словами, чтобы определить общую тему.</span><br>
-                        <img class="w-25 h-25"  src="/static/images/step2.png" alt="Найди общее" title="Найди общее">
+                        <h4>Найди общее</h4>
+                        <span>После того как вы прочитаете и поймёте слова, следующий шаг — найти общую тему, которая их связывает. В этот момент задавайте себе вопросы: Принадлежат ли слова к одной группе? Они чем-то похожи? Связаны ли они с определённой темой или идеей? Ищите связи или сходства между словами, чтобы определить общую тему.</span><br>
+                        <img class="w-25 h-25" src="/static/images/step2.png" alt="Найди общее" title="Найди общее">
                     </li>
                     <li>
-                        <h4>Выбери и отправь свой ответ</h4><span>Когда вы определите общую тему и найдёте четыре слова, подходящие под неё, пора сделать свой выбор. После того как вы выбрали четыре слова, нужно отправить свой ответ,нажав кнопку "Отправить".</span><br>
+                        <h4>Выбери и отправь свой ответ</h4>
+                        <span>Когда вы определите общую тему и найдёте четыре слова, подходящие под неё, пора сделать свой выбор. После того как вы выбрали четыре слова, нужно отправить свой ответ,нажав кнопку "Отправить".</span><br>
                         <img class="w-25 h-25" src="/static/images/step3.png" alt="Выбери и отправь свой ответ" title="Выбери и отправь свой ответ">
                     </li>
                 </ul>
@@ -67,11 +68,9 @@
         </div>
     </section>
 
-
-
     <footer class="bg-light py-4 mt-5">
         <div class="container text-center">
-            <p class="mb-0">@LemonLemon Ltd | Араарыы Оонньуу | Связать слова</p>
+            <p class="mb-0">@LemonLemon Ltd | Болох тыл | Связать слова</p>
         </div>
     </footer>
     <script src="/static/script.js"></script>

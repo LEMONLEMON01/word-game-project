@@ -15,46 +15,46 @@ app = FastAPI(title="Connections Game")
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-current_games = {}
-
+current_session = {
+    "categories": [],
+    "found_categories": [],
+    "words": []
+}
 
 @app.get("/")
 async def home(request: Request):
-    game_id = "default"  # должен быть уникальный ID
     words, categories = game_instance.generate_game()
-
-    current_games[game_id] = {
-        "categories": categories,
-        "found_categories": []
-    }
+    
+    current_session["categories"] = categories
+    current_session["found_categories"] = []
+    current_session["words"] = words
 
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "words": words,
-        "game_id": game_id
+        "words": words
     })
 
 
 @app.post("/check_selection")
-async def check_selection(game_id: str = Form(...), selected_words: str = Form(...)):
+async def check_selection(selected_words: str = Form(...)):
     try:
         words_list = json.loads(selected_words)
 
-        if game_id not in current_games:
+        if not current_session["categories"]:
             return JSONResponse({"error": "Игра не найдена"}, status_code=404)
 
         result = game_instance.check_selection(
             words_list,
-            current_games[game_id]["categories"]
+            current_session["categories"]
         )
 
         if result["valid"]:
-            current_games[game_id]["found_categories"].append({
+            current_session["found_categories"].append({
                 "name": result["category_name"],
                 "words": words_list
             })
 
-            remaining = len(current_games[game_id]["categories"]) - len(current_games[game_id]["found_categories"])
+            remaining = len(current_session["categories"]) - len(current_session["found_categories"])
             result["remaining"] = remaining
             result["game_complete"] = remaining == 0
 
@@ -64,30 +64,37 @@ async def check_selection(game_id: str = Form(...), selected_words: str = Form(.
         return JSONResponse({"error": str(e)}, status_code=400)
 
 
-@app.get("/game_status/{game_id}")
-async def get_game_status(game_id: str):
-    if game_id in current_games:
+@app.get("/game_status")
+async def get_game_status():
+    if current_session["categories"]:
         return {
-            "found_categories": current_games[game_id]["found_categories"],
-            "total_categories": len(current_games[game_id]["categories"]),
-            "remaining": len(current_games[game_id]["categories"]) - len(current_games[game_id]["found_categories"])
+            "found_categories": current_session["found_categories"],
+            "total_categories": len(current_session["categories"]),
+            "remaining": len(current_session["categories"]) - len(current_session["found_categories"])
         }
     return {"error": "Игра не найдена"}
 
+@app.get("/current_game")
+async def get_current_game():
+    """Возвращает текущую активную игру"""
+    if current_session["words"]:
+        return {
+            "words": current_session["words"],
+            "found_categories": current_session["found_categories"],
+            "total_categories": len(current_session["categories"])
+        }
+    return {"error": "Нет активной игры"}
 
 @app.post("/new_game")
 async def new_game():
-    game_id = "default"  # должен быть уникальный ID
     words, categories = game_instance.generate_game()
-
-    current_games[game_id] = {
-        "categories": categories,
-        "found_categories": []
-    }
+    
+    current_session["categories"] = categories
+    current_session["found_categories"] = []
+    current_session["words"] = words
 
     return JSONResponse({
-        "words": words,
-        "game_id": game_id
+        "words": words
     })
 
 

@@ -17,7 +17,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 current_games = {}
 
-
 @app.get("/")
 async def home(request: Request):
     game_id = "default"  # должен быть уникальный ID

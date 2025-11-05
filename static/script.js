@@ -3,11 +3,12 @@ class ConnectionsGame {
         this.selectedWords = [];
         this.mistakes = 0;
         this.maxMistakes = 4;
-        this.gameId = document.querySelector('input[name="game_id"]')?.value || 'default';
         this.foundCategories = [];
         this.wordPositions = new Map();
-        
+        this.currentWords = [];
+
         this.initializeEventListeners();
+        this.loadGameState();
         this.initializeWordPositions();
         this.updateGameStatus();
     }
@@ -60,7 +61,6 @@ class ConnectionsGame {
 
         try {
             const formData = new FormData();
-            formData.append('game_id', this.gameId);
             formData.append('selected_words', JSON.stringify(this.selectedWords));
 
             const response = await fetch('/check_selection', {
@@ -99,13 +99,14 @@ class ConnectionsGame {
         }
 
         this.updateGameStatus();
+        this.saveGameState();
     }
 
     replaceWordsWithCategory(categoryName, words) {
         const combinedGrid = document.getElementById('combinedGrid');
         const gridItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
         const wordPositions = words.map(word => {
-            const index = Array.from(gridItems).findIndex(item => 
+            const index = Array.from(gridItems).findIndex(item =>
                 item.classList.contains('word-card') && item.dataset.word === word
             );
             return index;
@@ -114,7 +115,7 @@ class ConnectionsGame {
         if (wordPositions.length !== 4) return;
         const firstPosition = wordPositions[0];
         const rowStart = Math.floor(firstPosition / 4) * 4;
-        
+
         const categoryBlock = document.createElement('div');
         categoryBlock.className = `category-block grid-item ${this.getCategoryColor(this.foundCategories.length - 1)}`;
         categoryBlock.innerHTML = `
@@ -130,7 +131,7 @@ class ConnectionsGame {
 
         const rowItems = Array.from(combinedGrid.querySelectorAll('.grid-item'));
         const insertPosition = rowStart;
-        
+
         if (rowItems[insertPosition]) {
             combinedGrid.insertBefore(categoryBlock, rowItems[insertPosition]);
         } else {
@@ -148,7 +149,7 @@ class ConnectionsGame {
         categoryBlocks.forEach(block => {
             combinedGrid.appendChild(block);
         });
-        
+
         wordCards.forEach(card => {
             combinedGrid.appendChild(card);
         });
@@ -170,6 +171,8 @@ class ConnectionsGame {
                 this.endGame();
             }, 1000);
         }
+        this.updateGameStatus();
+        this.saveGameState();
     }
 
     updateMistakesDisplay() {
@@ -187,12 +190,12 @@ class ConnectionsGame {
         wordCards.forEach(card => {
             card.remove();
         });
-        
+
         for (let i = wordCards.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [wordCards[i], wordCards[j]] = [wordCards[j], wordCards[i]];
         }
-        
+
         wordCards.forEach(card => {
             combinedGrid.appendChild(card);
             card.classList.add('scramble-animation');
@@ -208,18 +211,139 @@ class ConnectionsGame {
             card.classList.remove('selected');
         });
         this.updateSubmitButton();
+        this.saveGameState();
     }
 
     async updateGameStatus() {
         try {
-            const response = await fetch(`/game_status/${this.gameId}`);
+            const response = await fetch(`/game_status`);
             const status = await response.json();
 
             if (status.error) {
                 console.error('Ошибка получения статуса:', status.error);
             }
+
+            this.foundCategories = status.found_categories || [];
+            this.updateProgress();
         } catch (error) {
             console.error('Ошибка обновления статуса:', error);
+        }
+    }
+
+    async newGame() {
+        try {
+            const response = await fetch('/new_game', {
+                method: 'POST'
+            });
+            const result = await response.json();
+
+            if (result.words) {
+                this.resetGame();
+                this.updateGameBoard(result.words);
+                this.saveGameState();
+                this.showMessage('Новая игра начата!', 'success');
+            }
+        } catch (error) {
+            console.error('Error starting new game:', error);
+            this.showMessage('Ошибка при запуске новой игры', 'error');
+        }
+    }
+
+    initializeWordCardListeners() {
+        document.querySelectorAll('.word-card').forEach(card => {
+            card.addEventListener('click', () => this.toggleWord(card));
+        });
+    }
+
+    saveGameState() {
+        const gameState = {
+            selectedWords: this.selectedWords,
+            mistakes: this.mistakes,
+            foundCategories: this.foundCategories,
+            currentWords: this.currentWords,
+            words: Array.from(document.querySelectorAll('.word-card')).map(card => card.dataset.word)
+        };
+        localStorage.setItem('connectionsGameState', JSON.stringify(gameState));
+    }
+
+    async loadGameState() {
+        const saved = localStorage.getItem('connectionsGame');
+
+        if (saved) {
+            try {
+                const state = JSON.parse(saved);
+
+                const isExpired = Date.now() - state.timestamp > 24 * 60 * 60 * 1000;
+
+                if (!isExpired && state.currentWords && state.currentWords.length === 16) {
+                    this.selectedWords = state.selectedWords || [];
+                    this.mistakes = state.mistakes || 0;
+                    this.foundCategories = state.foundCategories || [];
+                    this.currentWords = state.currentWords;
+
+                    this.restoreVisualState();
+
+                    console.log('Игра восстановлена из сохранения');
+                    return;
+                }
+            } catch (e) {
+                console.error('Error loading saved game:', e);
+            }
+        }
+        await this.loadNewGame();
+    }
+
+    restoreVisualState() {
+        this.updateMistakesDisplay();
+
+        this.updateProgress();
+
+        this.restoreFoundCategories();
+
+        this.restoreSelectedWords();
+    }
+
+    restoreFoundCategories() {
+        this.foundCategories.forEach((category, index) => {
+            this.replaceWordsWithCategory(category.name, category.words);
+        });
+    }
+
+    restoreSelectedWords() {
+        this.selectedWords.forEach(word => {
+            const card = document.querySelector(`.word-card[data-word="${word}"]`);
+            if (card && !card.classList.contains('used')) {
+                card.classList.add('selected');
+            }
+        });
+        this.updateSubmitButton();
+    }
+
+    clearSavedGame() {
+        localStorage.removeItem('connectionsGameState');
+    }
+
+    showMessage(text, type) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = text;
+        messageDiv.className = `message ${type}`;
+        messageDiv.style.display = 'block';
+
+        setTimeout(() => {
+            this.hideMessage();
+        }, 3000);
+    }
+
+    hideMessage() {
+        const messageDiv = document.getElementById('message');
+        messageDiv.style.display = 'none';
+        messageDiv.className = 'message';
+    }
+
+    updateProgress() {
+        const foundCount = document.getElementById('foundCount');
+        if (foundCount) {
+            foundCount.textContent = this.foundCategories.length;
         }
     }
 
@@ -228,7 +352,7 @@ class ConnectionsGame {
         messageDiv.textContent = text;
         messageDiv.className = `message ${type}`;
         messageDiv.style.display = 'block';
-        
+
         setTimeout(() => {
             this.hideMessage();
         }, 3000);

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Болох тыл</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header class="game-header py-3 mb-4">
+                <div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="game-title m-0">Болох тыл</h3>
+                    </div>
+                </div>
+            </header>
+
+            <div class="game-screen">
+                <div class="combined-grid">
+                    <!-- Category Blocks -->
+                    <div 
+                        v-for="(category, index) in foundCategories" 
+                        :key="'category-' + index"
+                        class="category-block grid-item"
+                        :class="getCategoryColor(index)"
+                    >
+                        <div class="category-content">
+                            <strong>{{ category.name }}</strong>
+                            <div class="category-words">{{ category.words.join(', ') }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Word Cards -->
+                    <div 
+                        v-for="(word, index) in words" 
+                        :key="'word-' + index"
+                        class="word-card grid-item"
+                        :class="{ 
+                            'selected': selectedWords.includes(word),
+                            'scramble-animation': scrambleAnimation
+                        }"
+                        @click="toggleWord(word)"
+                    >
+                        {{ word }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="game-info">
+                <div class="mistakes">
+                    Осталось ошибок: 
+                    <span 
+                        v-for="n in 4" 
+                        :key="n"
+                        class="mistake"
+                        :class="{ 'used': mistakes >= n }"
+                    >●</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button @click="deselectAll" class="btn-control">Снять отметку</button>
+                <button @click="shuffleWords" class="btn-control">Перемешать</button>
+                <button 
+                    @click="submitGuess" 
+                    :disabled="selectedWords.length !== 4 || gameOver" 
+                    class="btn-submit"
+                >
+                    Отправить
+                </button>
+            </div>
+
+            <div 
+                v-if="showMessage" 
+                class="message" 
+                :class="messageClass"
+            >
+                {{ messageText }}
+            </div>
+        </div>
+
+        <section class="section">
+            <div class="spellbee-container">
+                <div class="text-center">
+                    <h3 class="text-center">Как играть в Болох тыл?</h3>
+                    <ul class="list-unstyled">
+                        <li>
+                            <h4>Прочти слова</h4>
+                            <span>Первый шаг — внимательно прочитать и понять слова, представленные в игре "Болох тыл". Не спешите, постарайтесь понять каждое слово и подумать, что оно означает в контексте головоломки. Если потребуется помощь, не стесняйтесь использовать Google или другие ресурсы, чтобы понять значение слов.</span><br>
+                            <div class="image">
+                                <img class="adaptive-image" src="/img/step1.png" alt="Прочти слова" title="Прочти слова">
+                            </div>
+                        </li>
+                        <li>
+                            <h4>Найди общее</h4>
+                            <span>После того как вы прочитаете и поймёте слова, следующий шаг — найти общую тему, которая их связывает. В этот момент задавайте себе вопросы: Принадлежат ли слова к одной группе? Они чем-то похожи? Связаны ли они с определённой темой или идеей? Ищите связи или сходства между словами, чтобы определить общую тему.</span><br>
+                            <div class="image">
+                                <img class="adaptive-image" src="/img/step2.png" alt="Найди общее" title="Найди общее">
+                            </div>
+                        </li>
+                        <li>
+                            <h4>Выбери и отправь свой ответ</h4>
+                            <span>Когда вы определите общую тему и найдёте четыре слова, подходящие под неё, пора сделать свой выбор. После того как вы выбрали четыре слова, нужно отправить свой ответ,нажав кнопку "Отправить".</span><br>
+                            <div class="image">
+                                <img class="adaptive-image" src="/img/step3.png" alt="Выбери и отправь свой ответ" title="Выбери и отправь свой ответ">
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-light py-4 mt-5">
+            <div class="container text-center">
+                <p class="mb-0">@LemonLemon Ltd | Болох тыл | Связать слова</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

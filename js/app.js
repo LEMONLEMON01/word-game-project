@@ -64,9 +64,8 @@ createApp({
         };
 
         const shuffleWords = () => {
+            selectedWords.value = [];
             scrambleAnimation.value = true;
-            
-            // Fisher-Yates shuffle
             const shuffled = [...words.value];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -114,14 +113,10 @@ createApp({
             showMessage.value = true;
             messageText.value = `Правильно! "${result.category_name}"`;
             messageClass.value = 'success';
-
-            // Add to found categories
             foundCategories.value.push({
                 name: result.category_name,
                 words: [...selectedWords.value]
             });
-
-            // Remove words from the grid
             words.value = words.value.filter(word => !selectedWords.value.includes(word));
             selectedWords.value = [];
 
@@ -177,8 +172,6 @@ createApp({
                 console.error('Error starting new game:', error);
             }
         };
-
-        // Lifecycle
         onMounted(() => {
             initializeGame();
         });

@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 
 from python:3.12-slim
-workdir /word-game-project
+workdir /app
 copy requirements.txt .
-run pip install -r requirements.txt
+run pip install --no-cache-dir -r requirements.txt
 
 copy . .
 

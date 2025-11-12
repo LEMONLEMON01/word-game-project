@@ -13,12 +13,29 @@ createApp({
         const messageText = ref('');
         const messageClass = ref('');
         const loading = ref(false);
+        const gameDate = ref('');
+        const today = ref('');
 
         // Computed properties
         const gameStatus = computed(() => {
             if (gameOver.value) return 'game-over';
             if (foundCategories.value.length === 4) return 'won';
             return 'playing';
+        });
+
+        const dailyInfo = computed(() => {
+            const gameDateObj = gameDate.value ? new Date(gameDate.value) : null;
+            const todayObj = new Date();
+            
+            if (!gameDateObj) return 'Загрузка...';
+            
+            const isToday = gameDateObj.toDateString() === todayObj.toDateString();
+            
+            if (isToday) {
+                return `Сегодняшняя игра • ${foundCategories.value.length}/4 найдено`;
+            } else {
+                return `Игра за ${gameDateObj.toLocaleDateString()} • ${foundCategories.value.length}/4 найдено`;
+            }
         });
 
         // Methods
@@ -29,7 +46,10 @@ createApp({
                 const data = await response.json();
                 
                 words.value = data.words;
+                gameDate.value = data.game_date;
                 resetGameState();
+                
+                checkDayChange();
             } catch (error) {
                 console.error('Error initializing game:', error);
                 showMessage.value = true;
@@ -37,6 +57,25 @@ createApp({
                 messageClass.value = 'error';
             } finally {
                 loading.value = false;
+            }
+        };
+
+        const checkDayChange = async () => {
+            try {
+                const response = await fetch('/api/daily_info');
+                const data = await response.json();
+                today.value = data.today;
+                
+                if (data.is_new_day && foundCategories.value.length > 0) {
+                    showMessage.value = true;
+                    messageText.value = 'Новый день! Доступна новая игра.';
+                    messageClass.value = 'info';
+                    setTimeout(() => {
+                        showMessage.value = false;
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error checking day change:', error);
             }
         };
 
@@ -160,18 +199,6 @@ createApp({
             return colors[index % colors.length];
         };
 
-        const newGame = async () => {
-            try {
-                const response = await fetch('/api/new_game', {
-                    method: 'POST'
-                });
-                const data = await response.json();
-                words.value = data.words;
-                resetGameState();
-            } catch (error) {
-                console.error('Error starting new game:', error);
-            }
-        };
         onMounted(() => {
             initializeGame();
         });
@@ -186,13 +213,14 @@ createApp({
             showMessage,
             messageText,
             messageClass,
+            gameDate,
+            dailyInfo,
             gameStatus,
             toggleWord,
             deselectAll,
             shuffleWords,
             submitGuess,
-            getCategoryColor,
-            newGame
+            getCategoryColor
         };
     }
 }).mount('#app');

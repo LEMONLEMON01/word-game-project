@@ -1,12 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
 from game_logic import game_instance
+from datetime import datetime, timezone
 
-app = FastAPI(title="Connections Game")
+app = FastAPI(title="Connections Game - Daily")
 
-# Serve static files from new folders
 app.mount("/css", StaticFiles(directory="css"), name="css")
 app.mount("/js", StaticFiles(directory="js"), name="js")
 app.mount("/img", StaticFiles(directory="img"), name="img")
@@ -14,27 +13,41 @@ app.mount("/img", StaticFiles(directory="img"), name="img")
 current_session = {
     "categories": [],
     "found_categories": [],
-    "words": []
+    "words": [],
+    "game_date": None
 }
+
+def is_new_day_needed():
+    if not current_session["game_date"]:
+        return True
+    
+    today = datetime.now(timezone.utc).date()
+    game_date = current_session["game_date"].date()
+    return today > game_date
+
+def reset_game():
+    words, categories = game_instance.generate_game()
+    
+    current_session["categories"] = categories
+    current_session["found_categories"] = []
+    current_session["words"] = words
+    current_session["game_date"] = datetime.now(timezone.utc)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    # Serve the main HTML file directly
     with open("index.html", "r", encoding="utf-8") as f:
         html_content = f.read()
     return HTMLResponse(content=html_content)
 
 @app.get("/api/game")
 async def get_game():
-    words, categories = game_instance.generate_game()
-    
-    current_session["categories"] = categories
-    current_session["found_categories"] = []
-    current_session["words"] = words
+    if is_new_day_needed() or not current_session["categories"]:
+        reset_game()
 
     return JSONResponse({
-        "words": words,
-        "categories": [{"name": cat.name, "words": cat.words} for cat in categories]
+        "words": current_session["words"],
+        "categories": [{"name": cat.name, "words": cat.words} for cat in current_session["categories"]],
+        "game_date": current_session["game_date"].isoformat()
     })
 
 @app.post("/api/check_selection")
@@ -68,19 +81,25 @@ async def get_game_status():
         return {
             "found_categories": current_session["found_categories"],
             "total_categories": len(current_session["categories"]),
-            "remaining": len(current_session["categories"]) - len(current_session["found_categories"])
+            "remaining": len(current_session["categories"]) - len(current_session["found_categories"]),
+            "game_date": current_session["game_date"].isoformat()
         }
     return {"error": "Игра не найдена"}
 
-@app.post("/api/new_game")
-async def new_game():
-    words, categories = game_instance.generate_game()
+@app.get("/api/daily_info")
+async def get_daily_info():
+    today = datetime.now(timezone.utc)
+    today_str = today.strftime("%Y-%m-%d")
     
-    current_session["categories"] = categories
-    current_session["found_categories"] = []
-    current_session["words"] = words
-
-    return JSONResponse({"words": words})
+    game_complete = len(current_session["found_categories"]) == 4 if current_session["found_categories"] else False
+    
+    return {
+        "today": today_str,
+        "current_game_date": current_session["game_date"].strftime("%Y-%m-%d") if current_session["game_date"] else None,
+        "is_new_day": is_new_day_needed(),
+        "game_complete": game_complete,
+        "found_count": len(current_session["found_categories"])
+    }
 
 if __name__ == "__main__":
     import uvicorn

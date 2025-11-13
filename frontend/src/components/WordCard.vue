@@ -31,7 +31,7 @@ defineEmits<Emits>()
   padding: 20px 10px;
   text-align: center;
   background: #d3fbe3;
-  border: 2px solid #d3fbe3;
+  border: 2px solid #c3ebd3;
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
@@ -39,16 +39,24 @@ defineEmits<Emits>()
   user-select: none;
   width: 100%;
   height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1em;
 }
 
 .word-card:hover {
   background: #a1eec0;
+  border-color: #91dea0;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 .word-card.selected {
-  background: #a1eec0;
-  border-color: #88c8a1;
+  background: #88c8a1;
+  border-color: #78b891;
+  color: white;
+  transform: scale(1.05);
 }
 
 .scramble-animation {
@@ -56,10 +64,17 @@ defineEmits<Emits>()
 }
 
 @keyframes scramble {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  50% { transform: translateX(5px); }
-  75% { transform: translateX(-3px); }
-  100% { transform: translateX(0); }
+  0% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-5px) rotate(-2deg); }
+  50% { transform: translateX(5px) rotate(2deg); }
+  75% { transform: translateX(-3px) rotate(-1deg); }
+  100% { transform: translateX(0) rotate(0deg); }
+}
+
+@media (max-width: 768px) {
+  .word-card {
+    padding: 15px 8px;
+    font-size: 0.9em;
+  }
 }
 </style>

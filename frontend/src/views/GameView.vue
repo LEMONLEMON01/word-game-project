@@ -3,8 +3,6 @@
     <GameHeader :daily-display="gameStore.dailyDisplay" />
     
     <div class="container">
-      
-
       <div class="game-screen">
         <!-- Show loading state -->
         <div v-if="gameStore.loading" class="loading">
@@ -17,25 +15,32 @@
         </div>
         
         <!-- Show game content when loaded -->
-        <div v-else class="combined-grid">
-          <!-- Category Blocks for found categories -->
-          <CategoryBlock
-            v-for="(category, index) in gameStore.foundCategories"
-            :key="'category-' + index"
-            :name="category.name"
-            :words="category.words"
-            :color="gameStore.getCategoryColor(index)"
-          />
-          
-          <!-- Word Cards for remaining words -->
-          <WordCard
-            v-for="(word, index) in gameStore.words"
-            :key="'word-' + index"
-            :word="word"
-            :selected="gameStore.selectedWords.includes(word)"
-            :scramble-animation="gameStore.scrambleAnimation"
-            @click="gameStore.toggleWord(word)"
-          />
+        <div v-else>
+          <!-- Found Categories Section - ABOVE the word grid -->
+          <div v-if="gameStore.foundCategories.length > 0" class="found-categories-section">
+            <h4>Найденные категории:</h4>
+            <div class="found-categories-grid">
+              <CategoryBlock
+                v-for="(category, index) in gameStore.foundCategories"
+                :key="'category-' + index"
+                :name="category.name"
+                :words="category.words"
+                :color="gameStore.getCategoryColor(index)"
+              />
+            </div>
+          </div>
+
+          <!-- Word Cards Grid -->
+          <div class="words-grid">
+            <WordCard
+              v-for="(word, index) in gameStore.words"
+              :key="'word-' + index"
+              :word="word"
+              :selected="gameStore.selectedWords.includes(word)"
+              :scramble-animation="gameStore.scrambleAnimation"
+              @click="gameStore.toggleWord(word)"
+            />
+          </div>
         </div>
       </div>
       
@@ -133,11 +138,28 @@ onMounted(() => {
   margin: auto;
 }
 
-.combined-grid {
+.found-categories-section {
+  margin-bottom: 30px;
+}
+
+.found-categories-section h4 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #333;
+  font-weight: 600;
+}
+
+.found-categories-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.words-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   min-height: 400px;
 }
 
@@ -158,15 +180,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 5px;
+  font-weight: 500;
 }
 
 .mistake {
-  color: gray;
+  color: #28a745;
   font-size: 1.5em;
 }
 
 .mistake.used {
-  opacity: 0.3;
+  color: #dc3545;
+  opacity: 0.5;
 }
 
 .section {
@@ -190,18 +214,17 @@ onMounted(() => {
   border-radius: 8px;
 }
 
-.debug-info {
-  font-family: monospace;
-  font-size: 12px;
-}
-
 @media (max-width: 768px) {
-  .combined-grid {
+  .words-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   
   .game-screen {
     width: 90%;
+  }
+  
+  .found-categories-grid {
+    gap: 8px;
   }
 }
 </style>

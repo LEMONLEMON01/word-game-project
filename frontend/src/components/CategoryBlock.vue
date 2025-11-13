@@ -1,7 +1,7 @@
 <template>
-  <div class="category-block grid-item" :class="color">
+  <div class="category-block" :class="color">
     <div class="category-content">
-      <strong>{{ name }}</strong>
+      <strong class="category-name">{{ name }}</strong>
       <div class="category-words">{{ words.join(', ') }}</div>
     </div>
   </div>
@@ -19,24 +19,30 @@ defineProps<Props>()
 
 <style scoped>
 .category-block {
-  padding: 20px;
+  padding: 15px 20px;
   border-radius: 8px;
   color: #333;
   font-weight: bold;
   text-align: center;
-  grid-column: 1 / span 4;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   animation: fadeIn 0.5s ease-in;
-  margin: 5px 0;
+  border: 2px solid transparent;
 }
 
 .category-content {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  align-items: center;
+}
+
+.category-name {
+  font-size: 1.1em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .category-words {
@@ -45,13 +51,31 @@ defineProps<Props>()
   font-weight: normal;
 }
 
-.category-block.yellow { background: #ffcc95; }
-.category-block.green { background: #aef8cb; }
-.category-block.blue { background: #b6ceff; }
-.category-block.purple { background: #E0ceff; }
+.category-block.yellow { 
+  background: #ffcc95; 
+  border-color: #e6b885;
+}
+.category-block.green { 
+  background: #aef8cb; 
+  border-color: #9de6b8;
+}
+.category-block.blue { 
+  background: #b6ceff; 
+  border-color: #a4bde6;
+}
+.category-block.purple { 
+  background: #E0ceff; 
+  border-color: #cebce6;
+}
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
+  from { 
+    opacity: 0; 
+    transform: translateY(-10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 </style>

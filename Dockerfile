@@ -1,22 +1,29 @@
 FROM node:18-alpine AS frontend-builder
 
 WORKDIR /app/frontend
-COPY frontend/package*.json ./
 
+COPY frontend/package.json frontend/package-lock.json* ./
 
-RUN npm install --silent
+RUN ls -la
+
+RUN npm install --no-optional --verbose
 
 COPY frontend/ .
-RUN npm run build
+
+RUN ls -la src/ || echo "No src directory"
+
+RUN npm run build --verbose
 
 FROM python:3.12-slim
 
 WORKDIR /app
+
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY backend/ .
 
+COPY backend/ .
 COPY --from=frontend-builder /app/frontend/dist ./static
+
 EXPOSE 8000
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

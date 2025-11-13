@@ -1,8 +1,8 @@
 import axios from 'axios'
 import type { CheckSelectionResponse, DailyInfo } from '../types/game'
 
-// Use absolute URL to ensure connection
-const API_BASE_URL = 'http://localhost:8000/api'
+// Use relative URL for production - will work with the same domain
+const API_BASE_URL = '/api'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,34 +12,12 @@ const api = axios.create({
   }
 })
 
-// Test the connection
-export const testConnection = async () => {
-  try {
-    console.log('🔗 Testing connection to:', API_BASE_URL)
-    const response = await axios.get('http://localhost:8000/')
-    console.log('✅ Backend is reachable:', response.data)
-    return true
-  } catch (error) {
-    console.error('❌ Backend is not reachable:', error)
-    return false
-  }
-}
-
 export const gameApi = {
   async getGame() {
     console.log('🚀 Fetching game from:', `${API_BASE_URL}/game`)
-    
-    // Test connection first
-    const connected = await testConnection()
-    if (!connected) {
-      throw new Error('Backend server is not reachable')
-    }
-    
     try {
       const response = await api.get('/game')
       console.log('✅ Game data received:', response.data)
-      console.log('📝 Words count:', response.data.words?.length)
-      console.log('📝 Words:', response.data.words)
       return response.data
     } catch (error) {
       console.error('❌ Failed to fetch game:', error)
@@ -54,11 +32,7 @@ export const gameApi = {
       console.log('✅ Selection response:', response.data)
       return response.data
     } catch (error: any) {
-      console.error('❌ Selection error details:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      })
+      console.error('❌ Selection error details:', error)
       throw error
     }
   },

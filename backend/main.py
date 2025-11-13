@@ -1,22 +1,30 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timezone
 import traceback
-import database  # Your database module
-from models import Category  # Your models
+import database
+from models import Category
+from daily_game import daily_generator
+import os
 
 app = FastAPI(title="Connections Game API")
 
-# CORS middleware
+# Serve static files (frontend)
+if os.path.exists("static"):
+    app.mount("/", StaticFiles(directory="static", html=True), name="static")
+
+# CORS middleware - only needed if you have external frontends
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all for development
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ... rest of your existing backend code remains the same
 current_session = {
     "categories": [],
     "found_categories": [],
@@ -38,11 +46,6 @@ def get_categories_from_db():
                 )
         
         print(f"📊 Loaded {len(categories)} categories from database")
-        
-        # If we have more than 4, we'll randomly select 4 later
-        # If we have exactly 4, use all of them
-        # If less than 4, use fallback
-        
         return categories
         
     except Exception as e:
@@ -61,18 +64,15 @@ def generate_fallback_categories():
 
 def reset_game():
     try:
-        # Use your actual database categories
         all_categories = get_categories_from_db()
         
         if len(all_categories) < 4:
             print("⚠️ Not enough categories from DB, using fallback")
             all_categories = generate_fallback_categories()
         
-        # SELECT ONLY 4 RANDOM CATEGORIES for the game
         import random
         selected_categories = random.sample(all_categories, 4)
         
-        # Combine words from only the 4 selected categories
         all_words = []
         for category in selected_categories:
             all_words.extend(category.words)
@@ -85,8 +85,6 @@ def reset_game():
         current_session["game_date"] = datetime.now(timezone.utc)
         
         print(f"🎮 Game reset with {len(all_words)} words and {len(selected_categories)} categories")
-        for category in selected_categories:
-            print(f"   📝 {category.name}: {category.words}")
         
     except Exception as e:
         print(f"❌ Error resetting game: {e}")
@@ -130,12 +128,10 @@ async def check_selection(selected_words: list[str]):
         if not current_session["categories"]:
             return JSONResponse({"error": "Игра не найдена"}, status_code=404)
 
-        # Check if selection matches any category
         for category in current_session["categories"]:
             print(f"🔍 Checking category: {category.name} with words: {category.words}")
             if set(selected_words) == set(category.words):
                 print(f"✅ Match found: {category.name}")
-                # Add to found categories
                 current_session["found_categories"].append({
                     "name": category.name,
                     "words": selected_words

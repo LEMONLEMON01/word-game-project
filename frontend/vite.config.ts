@@ -21,6 +21,6 @@ export default defineConfig({
       }
     }
   },
-  // Use empty base for correct paths
-  base: ''
+  // Use absolute paths
+  base: '/'
 })

@@ -1,42 +1,51 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from datetime import datetime, timezone
-import traceback
 import os
 import random
 
 app = FastAPI(title="Connections Game API")
 
-# Serve static files with proper configuration
+# Serve static files from the dist directory
 if os.path.exists("static"):
-    # Mount assets directory with proper MIME types
-    app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+    # Mount the entire static directory
+    app.mount("/static", StaticFiles(directory="static"), name="static")
     
-    # Serve index.html for the root path
-    @app.get("/")
-    async def serve_index():
-        return FileResponse("static/index.html")
-    
-    # Serve other static files
-    @app.get("/{filename:path}")
-    async def serve_static(filename: str):
-        static_path = f"static/{filename}"
-        if os.path.exists(static_path):
-            return FileResponse(static_path)
-        
-        # Fallback to index.html for SPA routing
-        if os.path.exists("static/index.html"):
-            return FileResponse("static/index.html")
-        
-        return {"error": "File not found"}
+    # Serve specific asset files with correct MIME types
+    @app.get("/assets/{file_path:path}")
+    async def serve_assets(file_path: str):
+        asset_path = os.path.join("static/assets", file_path)
+        if os.path.exists(asset_path):
+            return FileResponse(asset_path)
+        raise HTTPException(status_code=404)
 
-# API endpoints
+# Serve the main application - this is crucial
+@app.get("/")
+async def serve_index():
+    index_path = "static/index.html"
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"error": "Frontend not built"}
+
+# Catch-all route for SPA - serve index.html for all other routes
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    index_path = "static/index.html"
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"error": "Frontend not built"}
+
+# Health check endpoint
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {
+        "status": "healthy", 
+        "service": "Connections Game API",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
 
-# Your existing game code...
+# Your existing game state
 current_session = {
     "categories": [],
     "found_categories": [],

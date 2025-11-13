@@ -1,17 +1,44 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from datetime import datetime, timezone
 import os
 import random
 
 app = FastAPI(title="Connections Game API")
 
-# Serve static files - this is the key fix
-if os.path.exists("static"):
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve static files with explicit MIME type handling
+@app.get("/assets/{file_path:path}")
+async def serve_assets(file_path: str):
+    """Serve static assets with correct MIME types"""
+    asset_path = f"static/assets/{file_path}"
+    
+    if not os.path.exists(asset_path):
+        raise HTTPException(status_code=404, detail="Asset not found")
+    
+    # Set correct MIME types
+    if file_path.endswith('.js'):
+        return FileResponse(asset_path, media_type="application/javascript")
+    elif file_path.endswith('.css'):
+        return FileResponse(asset_path, media_type="text/css")
+    elif file_path.endswith('.png'):
+        return FileResponse(asset_path, media_type="image/png")
+    elif file_path.endswith('.ico'):
+        return FileResponse(asset_path, media_type="image/x-icon")
+    else:
+        return FileResponse(asset_path)
 
-# Serve index.html for all routes (SPA)
+@app.get("/src/{file_path:path}")
+async def serve_src(file_path: str):
+    """Serve source files"""
+    src_path = f"static/src/{file_path}"
+    if os.path.exists(src_path):
+        if src_path.endswith('.js') or src_path.endswith('.ts'):
+            return FileResponse(src_path, media_type="application/javascript")
+        return FileResponse(src_path)
+    raise HTTPException(status_code=404)
+
+# Serve index.html for root and all other routes
 @app.get("/")
 async def serve_index():
     if os.path.exists("static/index.html"):
@@ -22,14 +49,14 @@ async def serve_index():
 async def serve_spa(full_path: str):
     if os.path.exists("static/index.html"):
         return FileResponse("static/index.html")
-    return {"error": "Frontend not built"}
+    return {"error": "Frontend not found"}
 
-# Health check
+# API endpoints
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
-# Your game logic (simplified for now)
+# Game logic
 current_session = {
     "categories": [],
     "found_categories": [],

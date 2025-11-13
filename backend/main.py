@@ -16,26 +16,31 @@ from fastapi.responses import FileResponse
 
 app = FastAPI(title="Connections Game API")
 
-# Serve static files
-if os.path.exists("static"):
-    app.mount("/", StaticFiles(directory="static", html=True), name="static")
+# Serve static files (frontend)
+app.mount("/assets", StaticFiles(directory="static/assets"), name="assets")
+app.mount("/src", StaticFiles(directory="static/src"), name="src")
 
-# Fallback to index.html for SPA routing
+# Serve the main index.html for all other routes (SPA)
+@app.get("/")
+async def serve_index():
+    if os.path.exists("static/index.html"):
+        return FileResponse("static/index.html")
+    return {"error": "Frontend not built"}
+
 @app.get("/{full_path:path}")
 async def serve_spa(full_path: str):
     if os.path.exists("static/index.html"):
         return FileResponse("static/index.html")
     return {"error": "Frontend not built"}
 
-
-
-# ... rest of your existing backend code remains the same
+# ... your existing API routes below (keep all your current API code)
 current_session = {
     "categories": [],
     "found_categories": [],
     "words": [],
     "game_date": None
 }
+
 
 def get_categories_from_db():
     """Get categories from your actual database"""
@@ -211,7 +216,13 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
+@app.get("/api/health")
+async def health_check():
+    return {"status": "healthy", "message": "Backend is running"}
 
+@app.get("/health")
+async def root_health():
+    return {"status": "healthy", "message": "Service is running"}
 
 
     

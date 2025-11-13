@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { CheckSelectionResponse, DailyInfo } from '../types/game'
 
-// Use relative URL for production
+// Use absolute path for production
 const API_BASE_URL = '/api'
 
 const api = axios.create({
@@ -14,23 +14,13 @@ const api = axios.create({
 
 export const gameApi = {
   async getGame() {
-    try {
-      const response = await api.get('/game')
-      return response.data
-    } catch (error) {
-      console.error('Failed to fetch game:', error)
-      throw error
-    }
+    const response = await api.get('/game')
+    return response.data
   },
 
   async checkSelection(selectedWords: string[]): Promise<CheckSelectionResponse> {
-    try {
-      const response = await api.post('/check_selection', selectedWords)
-      return response.data
-    } catch (error: any) {
-      console.error('Selection error:', error)
-      throw error
-    }
+    const response = await api.post('/check_selection', selectedWords)
+    return response.data
   },
 
   async getGameStatus() {

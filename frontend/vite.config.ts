@@ -12,6 +12,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks: undefined,
@@ -21,6 +22,6 @@ export default defineConfig({
       }
     }
   },
-  // Use absolute paths
+  // Use absolute paths for production
   base: '/'
 })

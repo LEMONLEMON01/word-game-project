@@ -9,20 +9,25 @@ from models import Category
 from daily_game import daily_generator
 import os
 
+from fastapi.responses import FileResponse
+
+
+
+
 app = FastAPI(title="Connections Game API")
 
-# Serve static files (frontend)
+# Serve static files
 if os.path.exists("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
-# CORS middleware - only needed if you have external frontends
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Fallback to index.html for SPA routing
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    if os.path.exists("static/index.html"):
+        return FileResponse("static/index.html")
+    return {"error": "Frontend not built"}
+
+
 
 # ... rest of your existing backend code remains the same
 current_session = {
@@ -205,3 +210,8 @@ async def get_daily_info():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+
+
+    

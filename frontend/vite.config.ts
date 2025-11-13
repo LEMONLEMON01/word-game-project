@@ -9,27 +9,18 @@ export default defineConfig({
       '@': resolve(__dirname, 'src')
     }
   },
-  server: {
-    host: true,
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false
-      }
-    }
-  },
-  // Add this for production build
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        manualChunks: undefined
+        manualChunks: undefined,
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     }
   },
-  // For production, use relative paths
-  base: './'
+  // Use empty base for correct paths
+  base: ''
 })

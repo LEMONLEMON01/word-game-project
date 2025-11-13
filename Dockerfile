@@ -4,23 +4,24 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 
-# Copy frontend source
-COPY frontend/ .
+# Copy frontend files but exclude vite.config.ts
+COPY frontend/src/ ./src/
+COPY frontend/index.html ./
+COPY frontend/*.json ./
+COPY frontend/*.js ./
+COPY frontend/*.ts ./
 
-# Build frontend with simple config
+# Remove any problematic config file
+RUN rm -f vite.config.ts
+
+# Build with default Vite configuration
 RUN npm run build
 
 FROM python:3.12-slim
 WORKDIR /app
-
-# Install backend dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy backend code
 COPY backend/ .
-
-# Copy built frontend
 COPY --from=frontend-builder /app/frontend/dist ./static
 
 EXPOSE 8000

@@ -11,7 +11,7 @@ app = FastAPI(title="Connections Game API")
 
 # ✅ Чтение переменных окружения
 HOST = os.getenv("HOST", "0.0.0.0")
-PORT = int(os.getenv("PORT", "8000"))
+PORT = int(os.getenv("PORT", "8001"))
 
 # CORS middleware
 app.add_middleware(
@@ -218,7 +218,8 @@ async def get_daily_info():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
     @app.get("/health")
+    
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}

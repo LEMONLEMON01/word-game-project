@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
       // ✅ Прокси только для разработки
       proxy: mode === 'development' ? {
         '/api': {
-          target: 'http://localhost:8000',
+          target: 'http://localhost:8001',
           changeOrigin: true,
           secure: false
         }

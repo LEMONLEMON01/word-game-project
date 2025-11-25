@@ -3,20 +3,36 @@
     <GameHeader :daily-display="gameStore.dailyDisplay" />
     
     <div class="container">
-      
-
       <div class="game-screen">
         <!-- Show loading state -->
         <div v-if="gameStore.loading" class="loading">
           Загрузка игры...
         </div>
         
-        <!-- Show message if no words -->
+        <!-- Show game completion message when all words are found -->
+        <div v-else-if="gameStore.words.length === 0 && gameStore.foundCategories.length === 4" class="game-complete">
+          <div class="completion-message">
+            🎉 Поздравляем! Вы нашли все категории!
+          </div>
+          
+          <!-- Show all found categories when game is complete -->
+          <div class="categories-complete">
+            <CategoryBlock
+              v-for="(category, index) in gameStore.foundCategories"
+              :key="'category-' + index"
+              :name="category.name"
+              :words="category.words"
+              :color="gameStore.getCategoryColor(index)"
+            />
+          </div>
+        </div>
+        
+        <!-- Show error message if no words but game not completed -->
         <div v-else-if="gameStore.words.length === 0" class="no-words">
           Не удалось загрузить слова. Проверьте консоль для ошибок.
         </div>
         
-        <!-- Show game content when loaded -->
+        <!-- Show game content when loaded and words available -->
         <div v-else class="combined-grid">
           <!-- Category Blocks for found categories -->
           <CategoryBlock
@@ -121,6 +137,9 @@ onMounted(() => {
   gameStore.initializeGame().then(() => {
     console.log('✅ Game initialization complete')
     console.log('📝 Words after init:', gameStore.words)
+    console.log('🏆 Game status:', gameStore.gameStatus)
+    console.log('🎯 Found categories:', gameStore.foundCategories.length)
+    console.log('❌ Game over:', gameStore.gameOver)
   }).catch(error => {
     console.error('❌ Game initialization failed:', error)
   })
@@ -190,9 +209,35 @@ onMounted(() => {
   border-radius: 8px;
 }
 
+.game-complete {
+  text-align: center;
+}
+
+.completion-message {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2e7d32;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #e8f5e9;
+  border-radius: 8px;
+}
+
+.categories-complete {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
 .debug-info {
   font-family: monospace;
   font-size: 12px;
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
 }
 
 @media (max-width: 768px) {
@@ -202,6 +247,10 @@ onMounted(() => {
   
   .game-screen {
     width: 90%;
+  }
+  
+  .categories-complete {
+    max-width: 100%;
   }
 }
 </style>

@@ -39,7 +39,6 @@ export const useGameStore = defineStore('game', () => {
     }
   })
 
-  // In the initializeGame function, add connection test:
 const initializeGame = async () => {
   console.log('🔄 Initializing game...')
   loading.value = true
@@ -47,17 +46,43 @@ const initializeGame = async () => {
     const response = await gameApi.getGame()
     console.log('✅ Game data in store:', response)
     
-    // Make sure we're setting the words correctly
+    // ВАЖНО: Сначала восстанавливаем найденные категории
+    if (response.found_categories && Array.isArray(response.found_categories)) {
+      foundCategories.value = response.found_categories
+      console.log('🎯 Restored found categories:', foundCategories.value)
+    } else {
+      console.log('📝 No found categories to restore')
+      foundCategories.value = []
+    }
+    
+    // Теперь устанавливаем слова, УДАЛЯЯ уже найденные
     if (response.words && Array.isArray(response.words)) {
-      words.value = response.words
-      console.log('📝 Words set in store:', words.value)
+      // Получаем все найденные слова из восстановленных категорий
+      const foundWords = foundCategories.value.flatMap(category => category.words)
+      console.log('🗑️ Removing found words from available:', foundWords)
+      
+      // Фильтруем слова, оставляя только те, которые еще не найдены
+      words.value = response.words.filter(word => !foundWords.includes(word))
+      console.log('📝 Available words after filtering:', words.value)
     } else {
       console.error('❌ No words in response:', response)
       words.value = [] // Ensure it's always an array
     }
     
     gameDate.value = response.game_date
-    resetGameState()
+    
+    // Сбрасываем только временное состояние, но не прогресс
+    selectedWords.value = []
+    mistakes.value = 0
+    showMessage.value = false
+    
+    // Проверяем, завершена ли игра
+    if (foundCategories.value.length === 4) {
+      gameOver.value = true
+      console.log('🏆 Game already completed')
+    } else {
+      gameOver.value = false
+    }
     
     await checkDayChange()
   } catch (error) {
@@ -72,7 +97,6 @@ const initializeGame = async () => {
     loading.value = false
   }
 }
-
   const checkDayChange = async () => {
     try {
       dailyInfo.value = await gameApi.getDailyInfo()
@@ -82,13 +106,12 @@ const initializeGame = async () => {
     }
   }
 
-  const resetGameState = () => {
-    selectedWords.value = []
-    foundCategories.value = []
-    mistakes.value = 0
-    gameOver.value = false
-    showMessage.value = false
-  }
+const resetGameState = () => {
+  selectedWords.value = []
+  mistakes.value = 0
+  gameOver.value = false
+  showMessage.value = false
+}
 
   const toggleWord = (word: string) => {
     if (gameOver.value) return

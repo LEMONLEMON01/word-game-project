@@ -1,16 +1,12 @@
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1
 
-WORKDIR /app
+from python:3.12-slim
+workdir /app
+copy requirements.txt .
+run pip install --no-cache-dir -r requirements.txt
 
-# Копируем зависимости и устанавливаем их
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+copy . .
 
-# Копируем весь бэкенд код
-COPY . .
+expose 8000
 
-# Открываем порт (предположительно 8000 для FastAPI)
-EXPOSE 8000
-
-# Запускаем приложение
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+cmd ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

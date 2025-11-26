@@ -3,56 +3,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime, timezone
 import traceback
-<<<<<<< HEAD
 import json
 import random
 import database  # Your database module
 from models import Category  # Your models
-=======
-import os
-import database
-from models import Category
->>>>>>> main
 
 app = FastAPI(title="Connections Game API")
-
-# ✅ Чтение переменных окружения
-HOST = os.getenv("HOST", "0.0.0.0")
-PORT = int(os.getenv("PORT", "8000"))
 
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
-<<<<<<< HEAD
     allow_origins=[
         "http://localhost:3000", 
         "http://127.0.0.1:3000",
         "http://localhost:5173",  # Vite dev server
         "http://127.0.0.1:5173"   # Vite dev server
     ],
-=======
-    allow_origins=["*"],
->>>>>>> main
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-<<<<<<< HEAD
-=======
-if name == "main":
-    import uvicorn
-    print(f"🚀 Starting server on {HOST}:{PORT}")
-    uvicorn.run(app, host=HOST, port=PORT)
-
-current_session = {
-    "categories": [],
-    "found_categories": [],
-    "words": [],
-    "game_date": None
-}
-
->>>>>>> main
 def get_categories_from_db():
     """Get categories from your actual database"""
     try:
@@ -362,6 +333,3 @@ async def reset_progress(response: Response):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-    @app.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}

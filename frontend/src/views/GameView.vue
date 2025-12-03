@@ -7,11 +7,16 @@
         <button class="notification-close" @click="closePopup">×</button>
       </div>
     </div>
-
     <!-- Game Over Popup (Top Notification) -->
-    <div v-if="gameStore.gameOver" class="notification-popup game-over-notification">
+    <div v-if="gameStore.gameOver && gameStore.foundCategories.length !== 4" class="notification-popup game-over-notification">
       <div class="notification-content">
         <p>Игра окончена! Слишком много ошибок. Попробуйте снова завтра!</p>
+        <button class="notification-close" @click="closeGameOver">×</button>
+      </div>
+    </div>
+    <div v-if=" gameStore.gameOver && gameStore.foundCategories.length === 4" class="notification-popup game-over-notification-win">
+      <div class="notification-content">
+        <p>Поздравляем! Вы нашли все категории!</p>
         <button class="notification-close" @click="closeGameOver">×</button>
       </div>
     </div>
@@ -44,11 +49,9 @@
           Загрузка игры...
         </div>
         
-        <!-- Show game completion message when all words are found -->
+          
         <div v-else-if="gameStore.words.length === 0 && gameStore.foundCategories.length === 4" class="game-complete">
-          <div class="completion-message">
-            🎉 Поздравляем! Вы нашли все категории!
-          </div>
+          
           
           <!-- Show all found categories when game is complete -->
           <div class="categories-complete">
@@ -61,6 +64,7 @@
             />
           </div>
         </div>
+        
         
         <!-- Show error message if no words but game not completed -->
         <div v-else-if="gameStore.words.length === 0" class="no-words">
@@ -111,6 +115,18 @@
       />
     </div>
 
+    <section class="section about-section">
+      <div class="container">
+        <div class="text-center">
+          <h2 class="about-title">ТылМус: Связать слова</h2>
+          <p class="about-text">
+            Игра ТылМус — это ежедневная игра, в которой нужно находить общие связи между словами. В игре ТылМус игроки стремятся сформировать четыре группы по четыре слова, при этом 
+            ограничивая количество ошибок максимум четырьмя. Механика игры ТылМус добавляет дополнительный уровень волнения и стратегического мышления, так как игрокам нужно тщательно обдумывать свои выборы и связи.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section class="section instructions-section">
       
 
@@ -118,7 +134,7 @@
         <div class="text-center ">
           <h3 class="text-center">Как играть в ТылМус</h3>
           <ul class="list-unstyled">
-            <li>
+            <li class= "instructions-text">
               <h4>Прочти слова</h4>
               <span>Первый шаг — внимательно прочитать и понять слова, представленные в игре "ТылМус". Не спешите, постарайтесь понять каждое слово и подумать, что оно означает в контексте головоломки.</span><br>
               <div class="image">
@@ -127,14 +143,14 @@
             </li>
             <li>
               <h4>Найди общее</h4>
-              <span>После того как вы прочитаете и поймёте слова, следующий шаг — найти общую тему, которая их связывает.</span><br>
+              <span class= "instructions-text">После того как вы прочитаете и поймёте слова, следующий шаг — найти общую тему, которая их связывает.</span><br>
               <div class="image">
                 <img class="adaptive-image" src="/img/step2.png" alt="Найди общее" title="Найди общее">
               </div>
             </li>
             <li>
               <h4>Выбери и отправь свой ответ</h4>
-              <span>Когда вы определите общую тему и найдёте четыре слова, подходящие под неё, пора сделать свой выбор.</span><br>
+              <span class= "instructions-text">Когда вы определите общую тему и найдёте четыре слова, подходящие под неё, пора сделать свой выбор.</span><br>
               <div class="image">
                 <img class="adaptive-image" src="/img/step3.png" alt="Выбери и отправь свой ответ" title="Выбери и отправь свой ответ">
               </div>
@@ -206,16 +222,6 @@ const svgLoaded = ref({
   bottomRight: false
 })
 
-const handleSvgLoad = (type: string) => {
-  console.log(`✅ SVG loaded: ${type}`)
-  svgLoaded.value[type as keyof typeof svgLoaded.value] = true
-}
-
-const handleSvgError = (type: string) => {
-  console.error(`❌ SVG failed to load: ${type}`)
-  svgLoaded.value[type as keyof typeof svgLoaded.value] = false
-}
-
 const closePopup = () => {
   gameStore.showMessage = false
 }
@@ -244,7 +250,6 @@ onMounted(() => {
   min-height: 100vh;
 }
 
-/* Updated Notification Popup Styles - Smaller and Rounded */
 .notification-popup {
   position: fixed;
   top: 20px;
@@ -268,6 +273,10 @@ onMounted(() => {
 
 .notification-popup.error {
   border-color: #dc3545;
+  background: #fff8f8;
+}
+.game-over-notification-win {
+  border-color: #28a745;
   background: #fff8f8;
 }
 
@@ -323,7 +332,6 @@ onMounted(() => {
   }
 }
 
-/* Game Screen with Background */
 .game-screen {
   width: 45%;
   margin: auto;
@@ -361,12 +369,42 @@ onMounted(() => {
   transform: scaleY(-1);
 }
 
-/* Instructions Section with Corners */
+.about-section {
+  background-color: #D3FBE3;
+  padding: 40px 20px;
+  margin-top: 50px;
+  border-radius: 12px 12px 0 0; /* Rounded top corners only */
+  margin-bottom: 0; /* Remove bottom margin */
+}
+
+.about-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: black;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.about-text {
+  font-size: 18px;
+  line-height: 1.6;
+  color: black;
+  margin: 0 auto;
+}
+
+.instructions-text {
+  font-size: 18px;
+  line-height: 1.6;
+  max-width: 800px;
+  color: black;
+  margin: 0 auto;
+}
+
 .instructions-section {
   position: relative;
   background: #f8f9fa;
-  border-radius: 12px;
-  margin-top: 50px;
+  border-radius: 0 0 12px 12px; /* Rounded bottom corners only */
+  margin-top: 0; /* Remove top margin */
   padding: 60px 30px;
   overflow: hidden;
 }
@@ -410,7 +448,11 @@ onMounted(() => {
   z-index: 1;
 }
 
-/* Mistakes - Right to Left counting */
+.section {
+  margin-top: 0;
+  padding: 0;
+}
+
 .mistakes {
   display: flex;
   align-items: center;
@@ -427,7 +469,6 @@ onMounted(() => {
   opacity: 0.3;
 }
 
-/* Rest of your existing styles */
 .combined-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -447,11 +488,6 @@ onMounted(() => {
   margin-bottom: 15px;
   display: flex;
   justify-content: center;
-}
-
-.section {
-  margin-top: 50px;
-  padding: 30px 0;
 }
 
 .loading {
@@ -505,6 +541,17 @@ onMounted(() => {
     max-width: 100%;
   }
   
+  .about-section {
+    padding: 30px 15px;
+  }
+  
+  .about-title {
+    font-size: 24px;
+  }
+  
+  .about-text {
+    font-size: 16px;
+  }
   
   .instructions-section {
     padding: 40px 20px;
@@ -524,6 +571,14 @@ onMounted(() => {
   .notification-popup {
     max-width: 300px;
     top: 10px;
+  }
+  
+  .about-title {
+    font-size: 20px;
+  }
+  
+  .about-text {
+    font-size: 14px;
   }
 }
 </style>
